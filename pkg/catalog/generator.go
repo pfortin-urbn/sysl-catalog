@@ -2,7 +2,6 @@
 package catalog
 
 import (
-	"fmt"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -174,21 +173,21 @@ func (p *Generator) Run() {
 	}
 	if p.Mermaid {
 		progress = pb.StartNew(len(p.MermaidFilesToCreate))
-		fmt.Println("Generating Mermaid diagrams:")
+		p.Log.Println("Generating Mermaid diagrams:")
 		diagramCreator(p.MermaidFilesToCreate, GenerateAndWriteMermaidDiagram)
 	}
 	if p.Redoc {
 		progress = pb.StartNew(len(p.RedocFilesToCreate))
-		logrus.Info("Generating Redoc files")
+		p.Log.Info("Generating Redoc files")
 		diagramCreator(p.RedocFilesToCreate, GenerateAndWriteRedoc)
 	}
 	if (p.ImageTags || p.DisableImages) && !p.Redoc {
-		logrus.Info("Skipping Image creation")
+		p.Log.Info("Skipping Image creation")
 		return
 	}
 	progress = pb.StartNew(len(p.FilesToCreate) + len(p.MermaidFilesToCreate) + len(p.RedocFilesToCreate))
 	progress.SetCurrent(completedDiagrams)
-	fmt.Println("Generating diagrams:")
+	p.Log.Println("Generating diagrams:")
 	if strings.Contains(p.PlantumlService, ".jar") {
 		if !p.Server {
 			diagramCreator(p.FilesToCreate, p.PlantumlJava)

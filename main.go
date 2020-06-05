@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -54,18 +54,17 @@ func main() {
 		log.SetLevel(logrus.InfoLevel)
 	} else {
 		log.SetLevel(logrus.ErrorLevel)
-		logrus.SetLevel(logrus.ErrorLevel)
 	}
 	if !*server {
-		fmt.Println("Parsing")
+		log.Println("Parsing")
 		start := time.Now()
 		m, _, err := loader.LoadSyslModule(".", *input, fs, log)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("Done")
+		log.Println("Done")
 		elapsed := time.Since(start)
-		fmt.Println("Done, time elapsed: ", elapsed)
+		log.Println("Done, time elapsed: ", elapsed)
 		catalog.NewProject(*input, plantumlService, *outputType, log, m, fs, *outputDir, *enableMermaid).
 			SetOptions(*noCSS, *noImages, *embed, *enableRedoc, *outputFileName).
 			WithTemplateFs(fs, strings.Split(*templates, ",")...).
@@ -78,29 +77,29 @@ func main() {
 		SetOptions(*noCSS, *noImages, *embed, *enableRedoc, *outputFileName).
 		WithTemplateFs(fs, strings.Split(*templates, ",")...).
 		ServerSettings(*noCSS, !*disableLiveReload, true)
-	fmt.Println("Serving on http://localhost" + *port)
-	logrus.SetOutput(ioutil.Discard)
+	log.Println("Serving on http://localhost" + *port)
+	log.SetOutput(ioutil.Discard)
 	go watcher.WatchFile(func(i interface{}) {
-		fmt.Println("Regenerating")
+		log.Println("Regenerating")
 		m, err := func() (m *sysl.Module, err error) {
 			defer func() {
 				if r := recover(); r != nil {
 					m = nil
-					err = fmt.Errorf("%s", r)
+					err = errors.New(r.(string))
 				}
 			}()
-			fmt.Println("Parsing")
+			log.Println("Parsing")
 			m, _, err = loader.LoadSyslModule("", *input, fs, log)
-			fmt.Println("Done Parsing")
+			log.Println("Done Parsing")
 			return
 		}()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		handler.Update(m, err)
 		livereload.ForceRefresh()
-		fmt.Println(i)
-		fmt.Println("Done Regenerating")
+		log.Println(i)
+		log.Println("Done Regenerating")
 	}, path.Dir(*input))
 	livereload.Initialize()
 	http.HandleFunc("/livereload.js", livereload.ServeJS)
