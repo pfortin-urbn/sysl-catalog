@@ -6,8 +6,8 @@ require (
 	github.com/alecthomas/assert v0.0.0-20170929043011-405dbfeb8e38
 	github.com/anz-bank/mermaid-go v0.0.0-20200708033517-0cb9fa897e0c
 	github.com/anz-bank/protoc-gen-sysl v0.0.4
-	github.com/anz-bank/sysl v0.108.0
-	github.com/cheggaaa/pb v2.0.7+incompatible
+	github.com/anz-bank/sysl v0.132.0
+	github.com/cheggaaa/pb/v3 v3.0.4
 	github.com/gohugoio/hugo v0.71.0
 	github.com/hashicorp/go-retryablehttp v0.6.6
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
