@@ -6,6 +6,7 @@ git add docs || true
 git rm -rf docs/* || true
 go run . -o demo/markdown demo/simple2.sysl
 go run . --type=html --embed -o demo/html demo/simple2.sysl --redoc
+go run . --type=html --mermaid -o demo/mermaid demo/simple2.sysl --redoc
 mkdir -p docs
 cp -r demo/html/* docs/
 

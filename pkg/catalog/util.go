@@ -13,22 +13,17 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/anz-bank/sysl/pkg/cmdutils"
 	"github.com/anz-bank/sysl/pkg/diagrams"
-
-	"github.com/anz-bank/protoc-gen-sysl/newsysl"
-
+	"github.com/anz-bank/sysl/pkg/sequencediagram"
+	"github.com/anz-bank/sysl/pkg/sysl"
 	"github.com/anz-bank/sysl/pkg/syslutil"
-
-	"github.com/joshcarp/mermaid-go/mermaid"
+	"github.com/anz-bank/protoc-gen-sysl/newsysl"
+	"github.com/anz-bank/mermaid-go/mermaid"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
-
-	"github.com/anz-bank/sysl/pkg/cmdutils"
-	"github.com/anz-bank/sysl/pkg/sequencediagram"
 	"github.com/hashicorp/go-retryablehttp"
-
-	"github.com/anz-bank/sysl/pkg/sysl"
 )
 
 // SanitiseOutputName removes characters so that the string can be used as a hyperlink.
