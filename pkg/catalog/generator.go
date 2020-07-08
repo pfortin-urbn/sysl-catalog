@@ -3,6 +3,7 @@ package catalog
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -13,7 +14,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/cheggaaa/pb"
+	"github.com/cheggaaa/pb/v3"
 
 	"github.com/iancoleman/strcase"
 
@@ -25,39 +26,49 @@ import (
 	"github.com/spf13/afero"
 )
 
-var typeMaps = map[string]string{"md": "README.md", "markdown": "README.md", "html": "index.html"}
+var outputFileNames = map[string]string{
+	"md":       "README.md",
+	"markdown": "README.md",
+	"html":     "index.html",
+}
 
 // Generator is the contextual object that is used in the markdown generation
 type Generator struct {
+	RootModule           *sysl.Module
 	FilesToCreate        map[string]string
 	MermaidFilesToCreate map[string]string
 	RedocFilesToCreate   map[string]string
 	SourceFileName       string
 	ProjectTitle         string
-	RootModule           *sysl.Module
-	LiveReload           bool // Add live reload javascript to html
-	ImageTags            bool // embedded plantuml img tags, or generated svgs
-	DisableCss           bool // used for rendering raw markdown
-	DisableImages        bool // used for omitting image creation
-	Mermaid              bool
-	Redoc                bool   // used for generating redoc for openapi specs
+	ImageDest            string // Output all images into this folder is set
 	Format               string // "html" or "markdown" or "" if custom
 	Ext                  string
 	OutputFileName       string
 	PlantumlService      string
-	Log                  *logrus.Logger
-	Fs                   afero.Fs
-	errs                 []error // Any errors that stop from rendering will be output to the browser
 	Templates            []*template.Template
 	StartTemplateIndex   int
+
+	LiveReload    bool // Add live reload javascript to html
+	ImageTags     bool // embedded plantuml img tags, or generated svgs
+	DisableCss    bool // used for rendering raw markdown
+	DisableImages bool // used for omitting image creation
+	Mermaid       bool
+	Redoc         bool // used for generating redoc for openapi specs
+
+	Log  *logrus.Logger
+	Fs   afero.Fs
+	errs []error // Any errors that stop from rendering will be output to the browser
+
 	// All of these are used in markdown generation
-	CurrentDir string
-	TempDir    string
-	Module     *sysl.Module
-	Title      string
-	OutputDir  string
-	Links      map[string]string
-	Server     bool
+	Module       *sysl.Module
+	CurrentDir   string
+	TempDir      string
+	Title        string
+	OutputDir    string
+	FeedbackLink string
+	ChatLink     string
+	Links        map[string]string
+	Server       bool
 }
 
 type SourceCoder interface {
@@ -67,26 +78,59 @@ type SourceCoder interface {
 
 // RootPath appends CurrentDir to output
 func (p *Generator) SourcePath(a SourceCoder) string {
-	rootDir := rootDirectory(path.Join(p.OutputDir, p.CurrentDir))
-	if source_path := Attribute(a, "source_path"); source_path != "" {
-		return rootDir + Attribute(a, "source_path")
+	//FIXME: handle source_path attr
+	// if source_path := Attribute(a, "source_path"); source_path != "" {
+	// 	return rootDirectory(path.Join(p.OutputDir, p.CurrentDir)) + Attribute(a, "source_path")
+	// }
+
+	return handleSourceURL(a.GetSourceContext().File)
+}
+
+func handleSourceURL(importPath string) string {
+	//FIXME: does not work with external sysl import modules
+	//FIXME: does not work with absolute import in sysl
+	//FIXME: only handles github
+	buildLink := func(base, file string) string {
+		urlPath, err := url.Parse(BuildGithubBlobURL(base))
+		if err != nil {
+			panic(err)
+		}
+		urlPath.Path = path.Join(urlPath.Path, file)
+		return urlPath.String()
 	}
-	return path.Join(rootDir, a.GetSourceContext().File)
+
+	if strings.HasPrefix(importPath, "github") {
+		urlPath, err := url.Parse("https://" + importPath)
+		if err == nil {
+			if strings.Contains(urlPath.Host, "github.") {
+				paths := strings.Split(urlPath.Path, "/")
+				// minimum length must be 3 to be a default external import
+				// user/repo/file
+				if len(paths) > 3 {
+					file := path.Join(paths[3:]...)
+
+					urlPath.Path = path.Join(paths[:3]...)
+					return buildLink(urlPath.String(), file)
+				}
+			}
+		}
+	}
+	return buildLink(GetRemoteFromGit(), importPath)
 }
 
 // NewProject generates a Generator object, fs and outputDir are optional if being used for a web server.
 func NewProject(
-	titleAndFileName, plantumlService, outputType string,
-	log *logrus.Logger,
+	titleAndFileName, plantumlService, outputType, feedbackLink, chatLink string,
+	logger *logrus.Logger,
 	module *sysl.Module,
-	fs afero.Fs, outputDir string, mermaidEnabled bool) *Generator {
+	fs afero.Fs, outputDir string) *Generator {
 	p := Generator{
 		ProjectTitle:       titleAndFileName,
 		SourceFileName:     titleAndFileName,
 		OutputDir:          outputDir,
-		OutputFileName:     typeMaps[strings.ToLower(outputType)],
+		OutputFileName:     outputFileNames[strings.ToLower(outputType)],
 		Format:             strings.ToLower(outputType),
-		Log:                log,
+		Log:                logger,
 		RootModule:         module,
 		PlantumlService:    plantumlService,
 		FilesToCreate:      make(map[string]string),
@@ -94,7 +138,8 @@ func NewProject(
 		MermaidFilesToCreate: make(map[string]string),
 		Fs:                 fs,
 		Ext:                ".svg",
-		Mermaid:            mermaidEnabled,
+		FeedbackLink:       feedbackLink,
+		ChatLink:           chatLink,
 	}
 	//if strings.Contains(p.PlantumlService, ".jar") {
 	//	_, err := os.Open(p.PlantumlService)
@@ -139,17 +184,23 @@ func (p *Generator) WithTemplateFs(fs afero.Fs, fileNames ...string) *Generator 
 	return p.WithTemplateString(tmpls...)
 }
 
-func (p *Generator) SetOptions(disableCss, disableImages, imageTags, redoc bool, readmeName string) *Generator {
+func (p *Generator) SetOptions(
+	disableCss, disableImages, imageTags, redoc, mermaidEnabled bool,
+	readmeName, ImageDest string) *Generator {
 	p.Redoc = redoc
 	p.DisableCss = disableCss
 	p.DisableImages = disableImages || imageTags
+	p.Mermaid = mermaidEnabled
 	p.ImageTags = imageTags
+	p.ImageDest = ImageDest
 	if readmeName != "" {
 		p.OutputFileName = readmeName
 	}
 	return p
-
 }
+
+var maxCreatorCount = 65500
+var maxCreators = make(chan struct{}, maxCreatorCount)
 
 // Run Executes a project and generates markdown and diagrams to a given filesystem.
 func (p *Generator) Run() {
@@ -159,14 +210,24 @@ func (p *Generator) Run() {
 	if err := p.CreateMarkdown(p.Templates[p.StartTemplateIndex], path.Join(p.OutputDir, fileName), p); err != nil {
 		p.Log.Error("Error creating project markdown:", err)
 	}
-	var wg sync.WaitGroup
+
 	var progress *pb.ProgressBar
-	var completedDiagrams int64
-	var diagramCreator = func(inMap map[string]string, f func(fs afero.Fs, filename string, data string) error) {
+	defer func() {
+		if progress != nil && progress.IsStarted() {
+			progress.Finish()
+			fmt.Printf("The generated files are output to folder `%s`\n", p.OutputDir)
+		}
+	}()
+
+	var wg sync.WaitGroup
+	var diagramCreator = func(inMap map[string]string, f func(fs afero.Fs, filename string, data string) error, progress *pb.ProgressBar) {
 		for fileName, contents := range inMap {
 			wg.Add(1)
 			go func(fileName, contents string) {
-				var err = f(p.Fs, path.Join(p.OutputDir, fileName), contents)
+				maxCreators <- struct{}{}
+				defer func() { <-maxCreators }()
+
+				var err = f(p.Fs, fileName, contents)
 				if err != nil {
 					p.Log.Error("Error generating file:", err)
 					os.Exit(1)
@@ -175,65 +236,53 @@ func (p *Generator) Run() {
 					progress.Increment()
 				}
 				wg.Done()
-				completedDiagrams++
 			}(fileName, contents)
 		}
 	}
+
 	if p.Mermaid {
-		progress = pb.StartNew(len(p.MermaidFilesToCreate))
-		fmt.Println("Generating Mermaid diagrams:")
-		diagramCreator(p.MermaidFilesToCreate, GenerateAndWriteMermaidDiagram)
+		progress = pb.Full.Start(len(p.MermaidFilesToCreate))
+		diagramCreator(p.MermaidFilesToCreate, GenerateAndWriteMermaidDiagram, progress)
+	} else {
+		if strings.Contains(p.PlantumlService, ".jar") {
+			if !p.Server {
+				diagramCreator(p.FilesToCreate, p.PUMLFile, progress)
+				start := time.Now()
+				if err := PlantUMLJava(p.PlantumlService, p.OutputDir); err != nil {
+					p.Log.Error(err)
+				}
+				elapsed := time.Since(start)
+				fmt.Println("Generating took ", elapsed)
+			}
+		} else {
+			progress = pb.Full.Start(len(p.FilesToCreate))
+			diagramCreator(p.FilesToCreate, HttpToFile, progress)
+		}
 	}
+
 	if p.Redoc {
-		progress = pb.StartNew(len(p.RedocFilesToCreate))
-		logrus.Info("Generating Redoc files")
-		diagramCreator(p.RedocFilesToCreate, GenerateAndWriteRedoc)
+		if progress.IsStarted() {
+			progress.SetTotal(progress.Total() + int64(len(p.RedocFilesToCreate)))
+		} else {
+			progress = pb.Full.Start(len(p.RedocFilesToCreate))
+		}
+		diagramCreator(p.RedocFilesToCreate, GenerateAndWriteRedoc, progress)
 	}
+
 	if (p.ImageTags || p.DisableImages) && !p.Redoc {
 		logrus.Info("Skipping Image creation")
 		return
 	}
-	fmt.Println("Generating diagrams:")
-	if strings.Contains(p.PlantumlService, ".jar") {
-		if !p.Server {
-			diagramCreator(p.FilesToCreate, p.PUMLFile)
-			start := time.Now()
-			if err := PlantUMLJava(p.PlantumlService, p.OutputDir); err != nil {
-				p.Log.Error(err)
-			}
-			elapsed := time.Since(start)
-			fmt.Println("Generating took ", elapsed)
-		}
-	} else {
-		progress = pb.StartNew(len(p.FilesToCreate) + len(p.MermaidFilesToCreate) + len(p.RedocFilesToCreate))
-		progress.SetCurrent(completedDiagrams)
-		diagramCreator(p.FilesToCreate, HttpToFile)
-	}
+
 	wg.Wait()
-	fmt.Println(p.OutputDir)
-	if progress != nil {
-		progress.Finish()
-	}
 }
 
-func markdownName(s, candidate string) string {
-	if strings.Contains(s, "{{.Title}}") {
-		candidate = SanitiseOutputName(candidate)
-		return strings.ReplaceAll(s, "{{.Title}}", candidate)
-	}
-	return s
+func (p *Generator) GetFeedbackLink() string {
+	return p.FeedbackLink
 }
 
-func Last(i interface{}, ind int) bool {
-	return ind == len(SortedKeys(i))-1
-}
-
-func Remove(s string, old ...string) string {
-	for _, e := range old {
-		re := regexp.MustCompile(e)
-		s = re.ReplaceAllString(s, "")
-	}
-	return s
+func (p *Generator) GetChatLink() string {
+	return p.ChatLink
 }
 
 // GetFuncMap returns the funcs that are used in diagram generation.
@@ -256,6 +305,7 @@ func (p *Generator) GetFuncMap() template.FuncMap {
 		"ModulePackageName":        ModulePackageName,
 		"SortedKeys":               SortedKeys,
 		"Attribute":                Attribute,
+		"ServiceMetadata":          ServiceMetadata,
 		"Fields":                   Fields,
 		"FieldType":                FieldType,
 		"SanitiseOutputName":       SanitiseOutputName,
@@ -265,5 +315,27 @@ func (p *Generator) GetFuncMap() template.FuncMap {
 		"ToTitle":                  strings.ToTitle,
 		"Base":                     filepath.Base,
 		"Last":                     Last,
+		"FeedbackLink":             p.GetFeedbackLink,
+		"ChatLink":                 p.GetChatLink,
 	}
+}
+
+func markdownName(s, candidate string) string {
+	if strings.Contains(s, "{{.Title}}") {
+		candidate = SanitiseOutputName(candidate)
+		return strings.ReplaceAll(s, "{{.Title}}", candidate)
+	}
+	return s
+}
+
+func Last(i interface{}, ind int) bool {
+	return ind == len(SortedKeys(i))-1
+}
+
+func Remove(s string, old ...string) string {
+	for _, e := range old {
+		re := regexp.MustCompile(e)
+		s = re.ReplaceAllString(s, "")
+	}
+	return s
 }

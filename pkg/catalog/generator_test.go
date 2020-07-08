@@ -29,7 +29,7 @@ var testFiles = []string{
 	"test/App/integration.svg",
 	"test/App/README.md",
 	"test/App/integration.svg",
-	"test/App/primitive/stringsimple.svg",
+	"test/App/primitive/stringid.svg",
 	"test/README.md",
 	"test/integration.svg",
 	"test/integrationepa.svg",
@@ -44,7 +44,7 @@ func TestNewProjectWithLoadSyslModule(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	p := NewProject(filePath, plantumlService, "markdown", logger, m, fs, outputDir, false)
+	p := NewProject(filePath, plantumlService, "markdown", "", "", logger, m, fs, outputDir)
 	p.Run()
 	// Assert the right files exist
 	for _, testFile := range testFiles {
@@ -65,7 +65,7 @@ func TestNewProjectWithParser(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	p := NewProject(filePath, plantumlService, "markdown", logrus.New(), m, fs, outputDir, false)
+	p := NewProject(filePath, plantumlService, "markdown", "", "", logrus.New(), m, fs, outputDir)
 	p.Run()
 	// Assert the right files exist
 	for _, testFile := range testFiles {
@@ -87,8 +87,8 @@ func TestGenerateDocsWithRedoc(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	p := NewProject(filePath, plantumlService, "markdown", logger, m, fs, outputDir, false)
-	p.SetOptions(false, false, false, true, "")
+	p := NewProject(filePath, plantumlService, "markdown", "", "", logger, m, fs, outputDir)
+	p.SetOptions(false, false, false, true, false, "", "")
 	p.Run()
 	// Assert the right files exist
 	testFile := outputDir + "/Simple/simple.redoc.html"
@@ -96,4 +96,28 @@ func TestGenerateDocsWithRedoc(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = afero.ReadFile(fs, testFile)
 	assert.NoError(t, err)
+}
+
+func TestHandleSourceURL(t *testing.T) {
+	t.Parallel()
+	assert.Equal(t,
+		"https://github.com/anz-bank/sysl-catalog/blob/master/random.sysl",
+		handleSourceURL("random.sysl"),
+	)
+	assert.Equal(t,
+		"https://github.com/anz-bank/sysl-catalog/blob/master/random/random/random.sysl",
+		handleSourceURL("random/random/random.sysl"),
+	)
+	assert.Equal(t,
+		"https://github.com/user/repo/blob/master/sysl/file",
+		handleSourceURL("github.com/user/repo/sysl/file"),
+	)
+	assert.Equal(t,
+		"https://github.com/anz-bank/sysl-catalog/blob/master/github/fake",
+		handleSourceURL("github/fake"),
+	)
+	assert.Equal(t,
+		"https://github.com/anz-bank/sysl-catalog/blob/master/github.com/invalid/path",
+		handleSourceURL("github.com/invalid/path"),
+	)
 }

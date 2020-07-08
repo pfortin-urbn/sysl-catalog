@@ -1,6 +1,6 @@
 
 
-[Back](../README.md)
+[Back](../README.md) | [Chat with us](https://anzoss.slack.com/messages/sysl-catalog/) | [New bug or feature request](https://github.com/anz-bank/sysl-catalog/issues/new)
 
 
 # foo
@@ -15,13 +15,25 @@
 
 
 ## Application Index
+
+
 | Application Name | Method | Source Location |
-----|----|----
-foo | [whatever](#foo-whatever) | [../../../../demo/simple2.sysl](../../../../demo/simple2.sysl)|  
+|----|----|----|
+| foo | [whatever](#foo-whatever) | [https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl](https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl)|  
+
+
+
 
 ## Type Index
+
+
 | Application Name | Type Name | Source Location |
-----|----|----
+|----|----|----|
+| foo | [FooRequest](#foo.FooRequest) | [https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl](https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl)|
+
+
+
+
 
 
 
@@ -34,7 +46,6 @@ foo | [whatever](#foo-whatever) | [../../../../demo/simple2.sysl](../../../../de
 
 ## Application foo
 
-- 
 
 
 
@@ -42,7 +53,11 @@ foo | [whatever](#foo-whatever) | [../../../../demo/simple2.sysl](../../../../de
 
 
 
-### foo whatever
+
+
+
+
+### <a name=foo-whatever></a>foo whatever
 
 
 <details>
@@ -54,28 +69,30 @@ foo | [whatever](#foo-whatever) | [../../../../demo/simple2.sysl](../../../../de
 <details>
 <summary>Request types</summary>
 
-#### Request types
 
-No Request types
+<span style="color:grey">No Request types</span>
+
 
 
 
 
 
 </details>
+
 <details>
 <summary>Response types</summary>
 
-#### Response types
 
 
 
-No Response Types
 
+<span style="color:grey">No Response Types</span>
 
 </details>
 
+
 ---
+
 
 
 
@@ -84,6 +101,24 @@ No Response Types
 
 
 
+
+
+
+
+<a name=foo.FooRequest></a><details>
+<summary>foo.FooRequest</summary>
+
+### foo.FooRequest
+
+
+
+![](foo/foorequestsimple.svg)
+
+[Full Diagram](foo/foorequest.svg)
+
+
+
+</details>
 
 
 <div class="footer">

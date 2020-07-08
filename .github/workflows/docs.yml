@@ -1,0 +1,22 @@
+name: Build Docs
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  gen-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Gen Docs
+      run: make docker-compose
+    - name: Create Pull Request
+      if: "!contains(github.event.head_commit.message, 'skip ci')"
+      uses: peter-evans/create-pull-request@v2
+      with:
+        commit-message: "Update docs [skip-ci]"
+        title: "Update docs [skip-ci]"
+        branch-suffix: random
+
+          

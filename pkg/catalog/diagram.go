@@ -44,6 +44,8 @@ const (
 	mermaidjs
 )
 
+// All the Create* functions not really create a file other than registering a filepath into "to be created" map list.
+
 // CreateMarkdown is a wrapper function that also converts output markdown to html if in server mode
 func (p *Generator) CreateMarkdown(t *template.Template, outputFileName string, i interface{}) error {
 	var buf bytes.Buffer
@@ -161,11 +163,20 @@ func (p *Generator) CreateSequenceDiagramPlantuml(appName string, endpoint *sysl
 	return p.CreateFile(plantumlString, plantuml, appName, endpoint.GetName()+p.Ext)
 }
 
+type Param interface {
+	Typer
+	GetName() string
+}
+
 // CreateParamDataModel creates a parameter data model and returns a filename
-func (p *Generator) CreateParamDataModel(app *sysl.Application, param Typer) string {
-	var appName, typeName string
+func (p *Generator) CreateParamDataModel(app *sysl.Application, param Param) string {
+	var appName, typeName, aliasTypeName string
 	var getRecursive bool
+	aliasTypeName = param.GetName()
 	appName, typeName = GetAppTypeName(param)
+	if aliasTypeName == "" {
+		aliasTypeName = typeName
+	}
 	if appName == "" {
 		appName = path.Join(app.GetName().GetPart()...)
 	}
@@ -174,7 +185,7 @@ func (p *Generator) CreateParamDataModel(app *sysl.Application, param Typer) str
 	} else {
 		getRecursive = true
 	}
-	return p.CreateTypeDiagram(appName, typeName, param.GetType(), getRecursive)
+	return p.CreateAliasedTypeDiagram(appName, typeName, aliasTypeName, param.GetType(), getRecursive)
 }
 
 // GetReturnType converts an application and a param into a type, useful for getting attributes.
@@ -288,11 +299,20 @@ func (p *Generator) CreateTypeDiagramMermaid(appName string, typeName string, re
 
 // CreateTypeDiagram creates a data model diagram and returns the filename
 // It handles recursively getting the related types, or for primitives, just returns the
-func (p *Generator) CreateTypeDiagramPlantuml(appName string, typeName string, t *sysl.Type, recursive bool) string {
+func (p *Generator) CreateTypeDiagram(appName string, typeName string, t *sysl.Type, recursive bool) string {
+	return p.CreateAliasedTypeDiagram(appName, typeName, typeName, t, recursive)
+}
+
+func (p *Generator) CreateAliasedTypeDiagram(appName, typeName, typeAlias string, t *sysl.Type, recursive bool) string {
 	m := p.RootModule
 	var plantumlString string
 	if recursive {
-		relatedTypes := catalogdiagrams.RecursivelyGetTypes(appName, map[string]*sysl.Type{typeName: NewTypeRef(appName, typeName)}, m)
+		relatedTypes := catalogdiagrams.RecursivelyGetTypes(
+			appName,
+			map[string]*catalogdiagrams.TypeData{
+				typeAlias: catalogdiagrams.NewTypeData(typeAlias, NewTypeRef(appName, typeName)),
+			}, m,
+		)
 		plantumlString = catalogdiagrams.GenerateDataModel(appName, relatedTypes)
 		if _, ok := p.RootModule.GetApps()[appName]; !ok {
 				return ""
@@ -302,9 +322,17 @@ func (p *Generator) CreateTypeDiagramPlantuml(appName string, typeName string, t
 			return ""
 		}
 	} else {
-		plantumlString = catalogdiagrams.GenerateDataModel(appName, map[string]*sysl.Type{typeName: t})
+		plantumlString = catalogdiagrams.GenerateDataModel(
+			appName,
+			map[string]*catalogdiagrams.TypeData{typeAlias: catalogdiagrams.NewTypeData(typeAlias, t)},
+		)
 	}
-	return p.CreateFile(plantumlString, plantuml, appName, typeName+TernaryOperator(recursive, "", "simple").(string)+p.Ext)
+	return p.CreateFile(
+		plantumlString, plantuml, appName,
+		typeName+TernaryOperator(
+			recursive,
+			TernaryOperator(typeAlias == typeName, "", typeAlias),
+			TernaryOperator(typeAlias == typeName, "simple", typeAlias)).(string)+p.Ext)
 }
 
 // CreateFileName returns the absolute and relative filepaths
@@ -326,18 +354,29 @@ func CreateFileName(dir string, elems ...string) (string, string) {
 
 // CreateRedoc registers a file that needs to be created when the input source context has extension .json or .yaml
 func (p *Generator) CreateRedoc(sourceContext *sysl.SourceContext, appName string) string {
-	if !IsOpenAPIFile(sourceContext) || !p.Redoc {
+	if !IsOpenAPIFile(sourceContext) || !p.Redoc || strings.Contains(sourceContext.GetFile(), "github") {
 		return ""
 	}
 	absPath, _ := CreateFileName(p.CurrentDir, appName+".redoc.html")
+	absPath = path.Join(p.OutputDir, absPath)
 	p.RedocFilesToCreate[absPath] = BuildSpecURL(sourceContext)
 	link, _ := CreateFileName("", appName+".redoc.html")
 	return link
 }
 
+func root(p string) string {
+	this := strings.Split(p, "/")
+	ret := ""
+	for _ = range this {
+		ret += "../"
+	}
+	return ret
+}
+
 // CreateFile registers a file that needs to be created in p, or returns the embedded img tag if in server mode
 func (p *Generator) CreateFile(contents string, diagramType int, elems ...string) string {
-	absFilePath, currentDir := CreateFileName(p.CurrentDir, elems...)
+	var absFilePath, currentDir string
+	absFilePath, currentDir = CreateFileName(p.CurrentDir, elems...)
 	var targetMap map[string]string
 	var err error
 	switch diagramType {
@@ -368,14 +407,19 @@ func (p *Generator) CreateFile(contents string, diagramType int, elems ...string
 	if p.ImageTags && diagramType == plantuml && !strings.Contains(p.PlantumlService, ".jar") {
 		return contents
 	}
-	targetMap[absFilePath] = contents
+	if p.ImageDest != "" {
+		absFilePath = path.Join(p.ImageDest, strings.ReplaceAll(absFilePath, "/", "-"))
+		targetMap[absFilePath] = contents
+		return path.Join(root(currentDir), absFilePath)
+	}
+	targetMap[path.Join(p.OutputDir, absFilePath)] = contents
 	return strings.Replace(absFilePath, currentDir, "", 1)
 }
 
 // GenerateDataModel generates a data model for all of the types in app
 func (p *Generator) GenerateDataModel(app *sysl.Application) string {
 	appName := strings.Join(app.GetName().GetPart(), "")
-	plantumlString := catalogdiagrams.GenerateDataModel(appName, app.GetTypes())
+	plantumlString := catalogdiagrams.GenerateDataModel(appName, catalogdiagrams.FromSyslTypeMap(appName, app.GetTypes()))
 	if _, ok := p.RootModule.GetApps()[appName]; !ok {
 		return ""
 	}
@@ -387,7 +431,7 @@ func (p *Generator) getProjectApp(m *sysl.Module) (*sysl.Application, map[string
 		SortedKeys(m.Apps),
 		func(i string) bool {
 			return syslutil.HasPattern(m.GetApps()[i].GetAttrs(), "project") &&
-				m.GetApps()[i].SourceContext.File == path.Base(p.SourceFileName)
+				path.Base(m.GetApps()[i].SourceContext.File) == path.Base(p.SourceFileName)
 		},
 	)
 	if len(includedProjects) > 0 {
@@ -454,7 +498,9 @@ func (p *Generator) MacroPackages(module *sysl.Module) []string {
 		p.CurrentDir = macroPackageName
 		p.TempDir = macroPackageName // this is for p.Packages()
 		p.Title = macroPackageName
-		p.Links = map[string]string{"Back": "../" + p.OutputFileName}
+		p.Links = map[string]string{
+			"Back": "../" + p.OutputFileName,
+		}
 		p.Module = macroPackage
 		err := p.CreateMarkdown(p.Templates[1], macroPackageFileName, p)
 		if err != nil {

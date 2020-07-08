@@ -1,6 +1,8 @@
 aqwari.net/xml v0.0.0-20190526204230-8dd125f7c15c/go.mod h1:NIqcJ5inc6DJNSGCVEYGd3vohE6xF4fhUKHSl5bItVE=
 aqwari.net/xml v0.0.0-20200323224746-73105c9af915 h1:XE0WxBil+QakNGN1kP3jzCNGPQ2hKvPIXxwB6wkKN1c=
 aqwari.net/xml v0.0.0-20200323224746-73105c9af915/go.mod h1:NIqcJ5inc6DJNSGCVEYGd3vohE6xF4fhUKHSl5bItVE=
+aqwari.net/xml v0.0.0-20200619145941-6c62842e69c1 h1:MRcR/WbipbMIH7HY4ARtkZn79QV0N2lS5smQeVfGTsI=
+aqwari.net/xml v0.0.0-20200619145941-6c62842e69c1/go.mod h1:NIqcJ5inc6DJNSGCVEYGd3vohE6xF4fhUKHSl5bItVE=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.37.4/go.mod h1:NHPJ89PdicEuT9hdPXMROBD91xc5uRDxsMtSB16k7hw=
@@ -117,8 +119,8 @@ github.com/anz-bank/sysl v0.76.0/go.mod h1:gE+ZIrsOGIMGRpWhuFpV/outDLAjuxW9buHgR
 github.com/anz-bank/sysl v0.88.0/go.mod h1:xItS1/FgoOxITJ7wjHb0c2E9JJuMPOvuzAo++VMV79w=
 github.com/anz-bank/sysl v0.92.0/go.mod h1:xItS1/FgoOxITJ7wjHb0c2E9JJuMPOvuzAo++VMV79w=
 github.com/anz-bank/sysl v0.93.0/go.mod h1:NVHgDqSHotzbNmVG/x0DB1nGFswB9MKVv0Oa5s/Q71o=
-github.com/anz-bank/sysl v0.108.0 h1:15IJddkYq9xrt1XSQGmARk4C2VXFd6nj7MpeWmAd6Ww=
-github.com/anz-bank/sysl v0.108.0/go.mod h1:kKgbmY3bD5uqWA1+2NQv1G47VE1vwkQDT5oig/Sng5c=
+github.com/anz-bank/sysl v0.131.0 h1:U7xVR/OdFJYR5WOwWa8mnlPBg2Gex4o6EXwHM1NUrpE=
+github.com/anz-bank/sysl v0.131.0/go.mod h1:sfar1MWv6D7dpqButSQW+luZcZWRv0ttOUXSEwp3498=
 github.com/anz-bank/sysl-catalog v1.2.30/go.mod h1:ctu4d6a7J3WzvfaatkpANwYBTRsdS9kM3/+RxVJ/kZs=
 github.com/anz-bank/sysl-catalog v1.4.20/go.mod h1:QeUCcG4RTf/065hLAt2btwXll+OcmMyaD/jYtSwFL6A=
 github.com/anz-bank/sysl-go v0.0.0-20200325045908-46c4ce0a2736/go.mod h1:Jvn9Prqi9lVOaDTTPaU84If2C8MUcB7gOKOtQWqD/Hc=
@@ -590,6 +592,7 @@ github.com/sanity-io/litter v1.2.0/go.mod h1:JF6pZUFgu2Q0sBZ+HSV35P8TVPI1TTzEwyu
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=
 github.com/sergi/go-diff v1.1.0 h1:we8PVUC3FE2uYfodKH/nBHMSetSfHDR6scGdBi+erh0=
 github.com/sergi/go-diff v1.1.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNXdaHfM=
+github.com/shurcooL/sanitized_anchor_name v1.0.0 h1:PdmoCO6wvbs+7yrJyMORt4/BmY5IYyJwS/kOiWx8mHo=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
@@ -981,19 +984,11 @@ gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/cheggaaa/pb.v2 v2.0.7 h1:beaAg8eacCdMQS9Y7obFEtkY7gQl0uZ6Zayb3ry41VY=
 gopkg.in/cheggaaa/pb.v2 v2.0.7/go.mod h1:0CiZ1p8pvtxBlQpLXkHuUTpdJ1shm3OqCF1QugkjHL4=
 gopkg.in/errgo.v2 v2.1.0/go.mod h1:hNsd1EY+bozCKY1Ytp96fpM3vjJbqLJn88ws8XvfDNI=
-gopkg.in/fatih/color.v1 v1.7.0 h1:bYGjb+HezBM6j/QmgBfgm1adxHpzzrss6bj4r9ROppk=
-gopkg.in/fatih/color.v1 v1.7.0/go.mod h1:P7yosIhqIl/sX8J8UypY5M+dDpD2KmyfP5IRs5v/fo0=
 gopkg.in/fsnotify.v1 v1.4.7/go.mod h1:Tz8NjZHkW78fSQdbUxIjBTcgA1z1m8ZHf0WmKUhAMys=
 gopkg.in/go-playground/assert.v1 v1.2.1/go.mod h1:9RXL0bg/zibRAgZUYszZSwO/z8Y/a8bDuhia5mkpMnE=
 gopkg.in/go-playground/validator.v9 v9.29.1/go.mod h1:+c9/zcJMFNgbLvly1L1V+PpxWdVbfP1avr/N00E2vyQ=
 gopkg.in/ini.v1 v1.51.0/go.mod h1:pNLf8WUiyNEtQjuu5G5vTm06TEv9tsIgeAvK8hOrP4k=
 gopkg.in/ini.v1 v1.51.1/go.mod h1:pNLf8WUiyNEtQjuu5G5vTm06TEv9tsIgeAvK8hOrP4k=
-gopkg.in/mattn/go-colorable.v0 v0.1.0 h1:WYuADWvfvYC07fm8ygYB3LMcsc5CunpxfMGKawHkAos=
-gopkg.in/mattn/go-colorable.v0 v0.1.0/go.mod h1:BVJlBXzARQxdi3nZo6f6bnl5yR20/tOL6p+V0KejgSY=
-gopkg.in/mattn/go-isatty.v0 v0.0.4 h1:NtS1rQGQr4IaFWBGz4Cz4BhB///gyys4gDVtKA7hIsc=
-gopkg.in/mattn/go-isatty.v0 v0.0.4/go.mod h1:wt691ab7g0X4ilKZNmMII3egK0bTxl37fEn/Fwbd8gc=
-gopkg.in/mattn/go-runewidth.v0 v0.0.4 h1:r0P71TnzQDlNIcizCqvPSSANoFa3WVGtcNJf3TWurcY=
-gopkg.in/mattn/go-runewidth.v0 v0.0.4/go.mod h1:BmXejnxvhwdaATwiJbB1vZ2dtXkQKZGu9yLFCZb4msQ=
 gopkg.in/resty.v1 v1.12.0/go.mod h1:mDo4pnntr5jdWRML875a/NmxYqAlA73dVijT2AXvQQo=
 gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7/go.mod h1:dt/ZhP58zS4L8KSrWDmTeBkI65Dw0HsyUHuEVlX15mw=
 gopkg.in/yaml.v2 v2.0.0-20170812160011-eb3733d160e7/go.mod h1:JAlM8MvJe8wmxCU4Bli9HhUf9+ttbYbLASfIpnQbh74=

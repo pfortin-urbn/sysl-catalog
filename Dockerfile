@@ -15,11 +15,13 @@ ENV LANG en_US.UTF-8
 ADD java/plantuml.jar .
 ADD java/nailgun-server-1.0.0-SNAPSHOT.jar .
 COPY --from=nailgun /usr/ng .
-COPY --from=builder /src/sysl-catalog .
+COPY --from=builder /src/sysl-catalog /bin/
 COPY scripts/nailgun.sh .
-
+RUN apk add --no-cache --upgrade bash
 RUN apk add --no-cache graphviz wget ca-certificates && \
       apk add --no-cache graphviz wget ca-certificates ttf-dejavu fontconfig
+RUN apk add git
 RUN mkdir -p /out
+RUN apk add --no-cache --upgrade git
 ENV SYSL_PLANTUML=plantuml.jar
 ENTRYPOINT ["./nailgun.sh"]

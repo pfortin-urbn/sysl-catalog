@@ -1,6 +1,6 @@
 
 
-[Back](../README.md)
+[Back](../README.md) | [Chat with us](https://anzoss.slack.com/messages/sysl-catalog/) | [New bug or feature request](https://github.com/anz-bank/sysl-catalog/issues/new)
 
 
 # ApplicationPackage
@@ -15,16 +15,28 @@
 
 
 ## Application Index
+
+
 | Application Name | Method | Source Location |
-----|----|----
-MobileApp | [Another](#MobileApp-Another) | [../../../../demo/simple2.sysl](../../../../demo/simple2.sysl)|  
-MobileApp | [Login](#MobileApp-Login) | [../../../../demo/simple2.sysl](../../../../demo/simple2.sysl)|  
-MobileApp2 | [SecondEndpoint](#MobileApp2-SecondEndpoint) | [../../../../demo/simple2.sysl](../../../../demo/simple2.sysl)|  
-MobileApp2 | [ThirdEndpoint](#MobileApp2-ThirdEndpoint) | [../../../../demo/simple2.sysl](../../../../demo/simple2.sysl)|  
+|----|----|----|
+| MobileApp | [Another](#MobileApp-Another) | [https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl](https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl)|  
+| MobileApp | [Login](#MobileApp-Login) | [https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl](https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl)|  
+| MobileApp2 | [SecondEndpoint](#MobileApp2-SecondEndpoint) | [https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl](https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl)|  
+| MobileApp2 | [ThirdEndpoint](#MobileApp2-ThirdEndpoint) | [https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl](https://github.com/anz-bank/sysl-catalog/blob/master/demo/simple2.sysl)|  
+
+
+
 
 ## Type Index
-| Application Name | Type Name | Source Location |
-----|----|----
+
+
+
+
+
+<span style="color:grey">No Types Defined</span>
+
+
+
 
 
 
@@ -37,6 +49,8 @@ MobileApp2 | [ThirdEndpoint](#MobileApp2-ThirdEndpoint) | [../../../../demo/simp
 
 ## Application MobileApp
 
+
+
 - this is a comment for MobileApp
 
 
@@ -45,7 +59,10 @@ MobileApp2 | [ThirdEndpoint](#MobileApp2-ThirdEndpoint) | [../../../../demo/simp
 
 
 
-### MobileApp Another
+
+
+
+### <a name=MobileApp-Another></a>MobileApp Another
 hello, world
 
 <details>
@@ -57,19 +74,19 @@ hello, world
 <details>
 <summary>Request types</summary>
 
-#### Request types
 
-No Request types
+<span style="color:grey">No Request types</span>
+
 
 
 
 
 
 </details>
+
 <details>
 <summary>Response types</summary>
 
-#### Response types
 
 
 
@@ -80,7 +97,9 @@ Response Response Response
 
 
 
+
 </details>
+
 
 ---
 
@@ -88,7 +107,7 @@ Response Response Response
 
 
 
-### MobileApp Login
+### <a name=MobileApp-Login></a>MobileApp Login
 hello, gamers
 
 <details>
@@ -100,21 +119,21 @@ hello, gamers
 <details>
 <summary>Request types</summary>
 
-#### Request types
 
 
 
 
 
-![](Server/request.svg)
+
+![](Server/requestinput.svg)
 
 
 
 </details>
+
 <details>
 <summary>Response types</summary>
 
-#### Response types
 
 
 
@@ -125,7 +144,9 @@ Empty Empty Empty
 
 
 
+
 </details>
+
 
 ---
 
@@ -136,6 +157,8 @@ Empty Empty Empty
 
 ## Application MobileApp2
 
+
+
 - this is a comment for MobileApp
 
 
@@ -144,7 +167,10 @@ Empty Empty Empty
 
 
 
-### MobileApp2 SecondEndpoint
+
+
+
+### <a name=MobileApp2-SecondEndpoint></a>MobileApp2 SecondEndpoint
 SecondEndpoint, comment
 
 <details>
@@ -156,21 +182,21 @@ SecondEndpoint, comment
 <details>
 <summary>Request types</summary>
 
-#### Request types
 
 
 
 
 
-![](Server/request.svg)
+
+![](Server/requestinput.svg)
 
 
 
 </details>
+
 <details>
 <summary>Response types</summary>
 
-#### Response types
 
 
 
@@ -181,7 +207,9 @@ Empty Empty Empty
 
 
 
+
 </details>
+
 
 ---
 
@@ -189,7 +217,7 @@ Empty Empty Empty
 
 
 
-### MobileApp2 ThirdEndpoint
+### <a name=MobileApp2-ThirdEndpoint></a>MobileApp2 ThirdEndpoint
 ThirdEndpoint comment
 
 <details>
@@ -201,19 +229,19 @@ ThirdEndpoint comment
 <details>
 <summary>Request types</summary>
 
-#### Request types
 
-No Request types
+<span style="color:grey">No Request types</span>
+
 
 
 
 
 
 </details>
+
 <details>
 <summary>Response types</summary>
 
-#### Response types
 
 
 
@@ -224,15 +252,11 @@ Response Response Response
 
 
 
+
 </details>
 
+
 ---
-
-
-
-
-# Types
-
 
 
 
